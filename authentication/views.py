@@ -77,7 +77,7 @@ def createitem(request):
     return render(request, 'createitem.html', {'form': form})
 
 
-
+@login_required
 def update(request,pk):
         item = get_object_or_404(Item, pk=pk)
         if request.method=='POST':
@@ -89,20 +89,24 @@ def update(request,pk):
                 form=ItemForm(instance=item)
         return render(request,'update.html',{'form':form})
 
+@login_required
 def delete(request,pk):
         item=get_object_or_404(Item, pk=pk)
         item.delete()
         return redirect('/')
 
+@login_required
 def Logout(request):
         logout(request)
         return render(request,'login.html')
 
+@login_required
 def profile(request):
         items=Item.objects.filter(user=request.user)  
         comments = Comment.objects.all().order_by('-id') 
         return render(request,'profile.html',{'items':items, 'comments': comments})
 
+@login_required
 def addcomment(request, item_id):
     item = get_object_or_404(Item, id=item_id)
     if request.method == 'POST':
