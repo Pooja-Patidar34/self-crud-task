@@ -11,21 +11,22 @@ def home(request):
           return render(request,'home.html')
 
 def login_page(request):
-          if request.method=='POST':
-                username=request.POST.get('username')
-                password=request.POST.get('password')
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
 
-                if not User.objects.filter(username=username).exists():
-                        messages.error(request,'Invalid Username')
-                        return redirect('/login/')
-                user=authenticate(username=username, password=password)
-                if user is None:
-                        messages.error(request,'Ivalid Password')
-                        return redirect('/login/')
-                else:
-                        login(request,user)
-                        return redirect('/')
-          return render(request,'login.html')
+        if not User.objects.filter(username=username).exists():
+            messages.error(request, 'Invalid Username')
+            return redirect('/login/')
+        user = authenticate(request, username=username, password=password)
+        if user is None:
+            messages.error(request, 'Invalid Password')
+            return redirect('/login/')
+        else:
+            login(request, user)
+            return redirect('/')
+            
+    return render(request, 'login.html')
                         
 def register_page(request):
           if request.method=='POST':
@@ -54,14 +55,23 @@ def list(request):
         items=Item.objects.all()
         return render(request,'list.html',{'items':items})
 
+from django.contrib.auth.decorators import login_required
+
+@login_required
 def createitem(request):
     if request.method == 'POST':
-        form = ItemForm(request.POST, request.FILES)  
+        print("User:", request.user)
+        print("Authenticated:", request.user.is_authenticated)
+
+        form = ItemForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
-            return redirect('/')  
+            item = form.save(commit=False)
+            item.user = request.user
+            print("Saving item with user:", item.user)  
+            item.save()
+            return redirect('/')
         else:
-            print("Form errors:", form.errors)  
+            print("Form errors:", form.errors)
     else:
         form = ItemForm()
     return render(request, 'createitem.html', {'form': form})
@@ -89,22 +99,20 @@ def Logout(request):
         return render(request,'login.html')
 
 def profile(request):
-        items=Item.objects.all()
+        items=Item.objects.filter(user=request.user)  
         comments = Comment.objects.all().order_by('-id') 
         return render(request,'profile.html',{'items':items, 'comments': comments})
 
 def addcomment(request, item_id):
-    item = get_object_or_404(Item, pk=item_id)
-
+    item = get_object_or_404(Item, id=item_id)
     if request.method == 'POST':
         form = CommentForm(request.POST)
         if form.is_valid():
             comment = form.save(commit=False)
-            comment.item = item  
+            comment.item = item
+            comment.user = request.user  
             comment.save()
-            return redirect('profile')
+            return redirect('/list/')
     else:
         form = CommentForm()
-
     return render(request, 'comment.html', {'form': form, 'item': item})
-

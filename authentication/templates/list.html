@@ -18,32 +18,49 @@
     <table class="table table-bordered text-center">
       <thead class="table-dark">
         <tr>
+          <th scope="col">User</th>
           <th scope="col">Name</th>
           <th scope="col">Description</th>
           <th scope="col">Comments</th>
         </tr>
       </thead>
       <tbody>
-        {% for item in items %}
-        <tr>
-          <td>{{ item.name }}</td>
-          <td><img src="{{ item.desc.url }}" alt="{{ item.name }}" class="img-thumbnail" style="max-height: 150px;"></td>
-          <td>
-            {% if item.comments.all %}
-              <ul class="list-unstyled mb-2">
-                {% for comment in item.comments.all %}
-                  <li class="border-bottom py-1">{{ comment.cmt }} commented by {{user.username}}</li>
-                {% endfor %}
-              </ul>
-            {% else %}
-              <p>No comments yet.</p>
-            {% endif %}
-            <a href="{% url 'addcomment' item.id %}" class="btn btn-sm btn-primary mt-2">Add Comment</a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+  {% for item in items %}
+  <tr>
+    <td>
+      {% if item.user %}
+        {{ item.user.username }}
+      {% else %}
+        <em>Unknown</em>
+      {% endif %}
+    </td>
+    <td>{{ item.name }}</td>
+    <td>
+      <img src="{{ item.desc.url }}" alt="{{ item.name }}" class="img-thumbnail" style="max-height: 150px;">
+    </td>
+    <td>
+      {% if item.comments.all %}
+        <ul class="list-unstyled mb-2">
+          {% for comment in item.comments.all %}
+            <li class="border-bottom py-1">
+              {{ comment.cmt }} commented by 
+              {% if comment.user %}
+                {{ comment.user.username }}
+              {% else %}
+                Anonymous
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No comments yet.</p>
+      {% endif %}
+      <a href="{% url 'addcomment' item.id %}" class="btn btn-sm btn-primary mt-2">Add Comment</a>
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+</table>
+</div>
 </body>
 </html>
