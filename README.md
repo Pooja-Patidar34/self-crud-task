@@ -6,7 +6,7 @@ Blog Post Project (with Django Authentication)
 
 Command for run the Project
 
-- cd authentication
+- cd core
 - python manage.py makemigrations
 - python manage.py migrate
 - python manage.py runserver
